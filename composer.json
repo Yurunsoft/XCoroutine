@@ -1,5 +1,5 @@
 {
-    "name": "xtlsoft/xcoroutine",
+    "name": "yurunsoft/xcoroutine",
     "description": "The PHP Coroutine.",
     "type": "library",
     "require": {
@@ -10,6 +10,10 @@
         {
             "name": "xtlsoft",
             "email": "xtlsoft@126.com"
+        },
+        {
+            "name": "Yurun",
+            "email": "admin@yurunsoft.com"
         }
     ],
     "autoload": {
