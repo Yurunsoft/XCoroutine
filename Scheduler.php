@@ -47,6 +47,20 @@
          * 
          */
         protected $method;
+
+        /**
+         * 挂起任务集合
+         *
+         * @var array
+         */
+        protected $suspendMap = [];
+
+        /**
+         * 当前任务ID
+         *
+         * @var int
+         */
+        protected $taskId;
         
         /**
          * function __construct()
@@ -118,9 +132,12 @@
             
             //While the Queue is not empty
             while(!$this->taskQueue->isEmpty()){
-                
+
                 //Get the Task from the Queue.
                 $task = $this->taskQueue->dequeue();
+
+                //Get the taskId.
+                $this->taskId = $task->getTaskId();
                 
                 //Run the Task.
                 $return = $task->run();
@@ -135,17 +152,14 @@
                     continue;
                     
                 }
-                
+
                 //Is the Task finished
                 if($task->isFinished()){
                     
-                    //Get the taskId.
-                    $tid = $task->getTaskId();
-                    
                     //Remove the task.
-                    unset($this->taskMap[$tid]);
+                    unset($this->taskMap[$this->taskId]);
                     
-                } else {
+                } else if(isset($this->taskMap[$this->taskId])){
                     
                     //Re-run the task
                     $this->schedule($task);
@@ -153,7 +167,7 @@
                 }
                 
             }
-            
+
         }
         
         /**
@@ -187,4 +201,73 @@
             
         }
         
+        /**
+         * 挂起当前协程
+         *
+         * @return boolean
+         */
+        public function suspend()
+        {
+            //Is Task Avalible
+            if (!isset($this->taskMap[$this->taskId])) {
+                return false;
+            }
+
+            $this->suspendMap[$this->taskId] = $this->taskMap[$this->taskId];
+            
+            //Unset in the map.
+            unset($this->taskMap[$this->taskId]);
+
+            //Unset in the queue.
+            foreach ($this->taskQueue as $i => $task) {
+                if ($task->getTaskId() === $this->taskId) {
+                    unset($this->taskQueue[$i]);
+                    break;
+                }
+            }
+            
+            return true;
+        }
+
+        /**
+         * 恢复协程
+         *
+         * @param int $tid
+         * @param mixed $data
+         * @return boolean
+         */
+        public function resume($tid, $data = null)
+        {
+            //Get the TaskId.
+            // $tid = ++$this->currentTaskId;
+                        
+            //Create a Task.
+            // $task = new Task($Generator, $tid);
+            // var_dump($tid, isset($this->suspendMap[$tid]));
+            if (!isset($this->suspendMap[$tid])) {
+                return false;
+            }
+
+            $task = $this->suspendMap[$tid];
+            unset($this->suspendMap[$tid]);
+            $task->setSendValue($data);
+
+            //Store the Task.
+            $this->taskMap[$tid] = $task;
+
+            //Add the task into the Queue.
+            $this->schedule($task);
+
+            return true;
+        }
+
+        /**
+         * 获取当前任务ID
+         *
+         * @return int
+         */
+        public function getTaskId()
+        {
+            return $this->taskId;
+        }
     }
