@@ -1,8 +1,14 @@
 # XCoroutine
+
 XCoroutine, the PHP Coroutine.
+
+此仓库版本为宇润基于 [xtlsoft/XCoroutine](https://github.com/xtlsoft/XCoroutine) 项目开发，增加协程挂起、恢复功能。
+
+本项目遵循 MIT 开源协议发布，并提供免费使用。
+
 ## install 安装
 ```sh
-composer require xtlsoft/xcoroutine
+composer require yurunsoft/xcoroutine
 ```
 ## Intro 介绍
 - Task: 任务实例。您可以向里面传入一个Generator，然后通过我们的封装对他进行操作。
